@@ -17,50 +17,29 @@
       <div v-if="screen === 2" class="chat-container">
         <div style="margin-right: 20px; flex:0.3;">
           <div class="users">
-            <span class="text">Users (2 online)</span>
+            <span class="text">Users ({{ users.length }} online)</span>
             <ul class="user-list">
-              <li class="user-item">Nicat</li>
-              <li class="user-item">Ejder</li>
-              <li class="user-item">Testtt</li>
-              <li class="user-item">Testtt</li>
-              <li class="user-item">Testtt</li>
-              <li class="user-item">Testtt</li>
+              <li v-for="user in users" key="user" class="user-item">{{ Object.keys(user)[0] }}</li>
             </ul>
           </div>
       </div>
         <div class="chat">
           <div class="chat-header">
-            <span class="room-text">Developer Room</span>
-            <img style="cursor:pointer; margin-right:10px;" width="18" height="18" src="./assets/log-out.svg" alt="leave room"></img>
+            <span class="room-text">{{ room }}</span>
+            <img @click="leaveRoom" style="cursor:pointer; margin-right:10px;" width="18" height="18" src="./assets/log-out.svg" alt="leave room"></img>
           </div>
           <div class="messages">
             <ul class="messages-list">
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz bende iyiyim amk gel ksjadjsa test test test test test test test test test</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz bende iyiyim amk gel ksjadjsa test test test test test test test test test</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz bende iyiyim amk gel ksjadjsa test test test test test test test test test</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz bende iyiyim amk gel ksjadjsa test test test test test test test test test</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz bende iyiyim amk gel ksjadjsa test test test test test test test test test</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz bende iyiyim amk gel ksjadjsa test test test test test test test test test</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz bende iyiyim amk gel ksjadjsa test test test test test test test test test</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
-              <li class="message"><span class="username">Nicat:</span> <span class="message-content">Merhabalar, nasılsınız iyi misiniz?</span><li>
+              <li v-for="message in messages" key="message" class="message">
+                <span v-if="message.isInfoMessage === true" class="info-message">[!] {{ message.message }}</span>
+                <span v-if="message.isInfoMessage === false" class="username">{{ message.sender }}: </span>
+                <span v-if="message.isInfoMessage === false" class="message-content">{{ message.message }}</span>
+              <li>
             </ul>
           </div>
           <div class="send-message">
-            <input style="margin: 10px; width:80%;"class="input" placeholder="Write your message.."></input>
-            <button class="button">Send</button>
+            <input v-model="message" @keyup.enter="sendMessage" style="margin: 10px; width:80%;" class="input" placeholder="Write your message.." autofocus ></input>
+            <button @click="sendMessage" class="button">Send</button>
           </div>
         </div>
       </div>
@@ -76,21 +55,54 @@
           error: '',
           username: '',
           room: '',
-          screen: 2
+          message: '',
+          users: [],
+          messages: [],
+          screen: 1
         }
+      },
+      created() {
+        socket.on('join-room', data => {
+          if(data.error.length > 0) {
+            this.error = data.error;
+          }
+          else {
+            this.users = data.users;
+            this.screen = 2
+          }
+        })
+        socket.on('user-joined', user => {
+          this.users.push(user);
+          this.messages.push({isInfoMessage: true, sender: "System", message: `${Object.keys(user)[0]} joined the room.`})
+        })
+        socket.on('chat-message', data => {
+          this.messages.push({isInfoMessage: false, sender: data.username, message: data.message})
+        })
+        socket.on('user-left', user => {
+          const found = this.users.findIndex(i => Object.keys(i)[0] === Object.keys(user)[0]);
+          this.users.splice(found, 1);
+          this.messages.push({isInfoMessage: true, sender: "System", message: `${Object.keys(user)[0]} left the room.`})
+        })
       },
       methods: {
         onSubmit: function (event) {
           event.preventDefault();
           socket.emit('join-room', {username: this.username, room: this.room})
-          socket.on('join-room', data => {
-            if(data.error.length > 0) {
-              this.error = data.error;
-            }
-            else {
-              this.screen = 2
-            }
-          })
+        },
+        sendMessage: function () {
+          if(this.message.length < 1) return false;
+          socket.emit('chat-message', {username: this.username, room: this.room, message: this.message})
+          this.message = '';
+        },
+        leaveRoom: function() {
+          socket.emit('leave-room', this.username)
+          this.users = [];
+          this.messages = [];
+          this.username = '';
+          this.room = '';
+          this.message = '';
+          this.error = ''
+          this.screen = 1
         }
       },
     }
