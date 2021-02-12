@@ -40,12 +40,23 @@
   font-weight: 400;
   color: #5b7083;
 }
+.send-message {
+  margin-bottom: 5px;
+  display: flex;
+  flex-direction: column;
+}
 .message-content {
   font-size: 14px;
   font-weight: 500;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 .info-message {
+  font-size: 13px;
+  font-weight: 500;
+  color: #007bff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+.typing-message {
   font-size: 13px;
   font-weight: 500;
   color: #007bff;
@@ -96,7 +107,7 @@
   align-items: center;
 }
 .input {
-  width: 50%;
+  width: 100%;
   padding-top: 10px;
   padding-bottom: 10px;
   padding-left: 15px;

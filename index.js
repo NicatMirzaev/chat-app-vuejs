@@ -45,6 +45,22 @@ io.on('connection', socket => {
        users = users.filter(i => i !== user);
      }
    })
+   socket.on("chat-start-typing", username => {
+     const user = users.find(user => Object.keys(user)[0] === username)
+     if(user !== undefined) {
+       const username = Object.keys(user)[0]
+       user[username].typing = true
+       io.to(user[username].room).emit('user-update', user)
+     }
+   })
+   socket.on("chat-end-typing", username => {
+     const user = users.find(user => Object.keys(user)[0] === username)
+     if(user !== undefined) {
+       const username = Object.keys(user)[0]
+       user[username].typing = false
+       io.to(user[username].room).emit('user-update', user)
+     }
+   })
    socket.on("disconnect", () => {
      const user = users.find(user => user[Object.keys(user)[0]].id === socket.id)
      if(user !== undefined) {

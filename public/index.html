@@ -38,8 +38,11 @@
             </ul>
           </div>
           <div class="send-message">
-            <input v-model="message" @keyup.enter="sendMessage" style="margin: 10px; width:80%;" class="input" placeholder="Write your message.." autofocus ></input>
-            <button @click="sendMessage" class="button">Send</button>
+            <span style="padding-left: 10px;" class="info-message">{{ getTypingUsers }}</span>
+            <div style="display:flex;align-items:center;">
+              <input v-model="message" @keyup.enter="sendMessage" style="margin: 10px; width:80%;" class="input" placeholder="Write your message.." autofocus ></input>
+              <button style="margin:0;" @click="sendMessage" class="button">Send</button>
+            </div>
           </div>
         </div>
       </div>
@@ -56,10 +59,58 @@
           username: '',
           room: '',
           message: '',
+          typing: false,
           users: [],
           messages: [],
           screen: 1
         }
+      },
+      watch: {
+        message() {
+          if(this.message.length > 0 && this.typing === false) {
+            this.typing = true
+            socket.emit('chat-start-typing', this.username)
+          }
+          else if(this.message.length < 1 && this.typing === true){
+            this.typing = false
+            socket.emit('chat-end-typing', this.username)
+          }
+        }
+      },
+      computed: {
+        getTypingUsers () {
+          const typing = [];
+          for(let i = 0; i < this.users.length; i++) {
+            const data = this.users[i][Object.keys(this.users[i])[0]];
+            console.log(data.typing);
+            if(data.typing === true) {
+              typing.push(Object.keys(this.users[i])[0]);
+            }
+          }
+          let returnString = ' ';
+          switch(typing.length) {
+            case 0: {
+              returnString = ' ';
+              break;
+            }
+            case 1: {
+              returnString = `${typing[0]} typing..`;
+              break;
+            }
+            case 2: {
+              returnString = `${typing[0]} and ${typing[1]} typing..`;
+              break;
+            }
+            case 3: {
+              returnString = `${typing[0]}, ${typing[1]} and ${typing[2]} typing..`;
+              break;
+            }
+            default: {
+              returnString = `${typing[0]}, ${typing[1]}, ${typing[2]} and ${typing.length - 3} other(s) typing..`
+            }
+          }
+          return returnString
+        },
       },
       created() {
         socket.on('join-room', data => {
@@ -82,6 +133,12 @@
           const found = this.users.findIndex(i => Object.keys(i)[0] === Object.keys(user)[0]);
           this.users.splice(found, 1);
           this.messages.push({isInfoMessage: true, sender: "System", message: `${Object.keys(user)[0]} left the room.`})
+        })
+        socket.on('user-update', user => {
+          const found = this.users.findIndex(i => Object.keys(i)[0] === Object.keys(user)[0]);
+          if(found != -1) {
+            this.users[found] = user;
+          }
         })
       },
       methods: {
