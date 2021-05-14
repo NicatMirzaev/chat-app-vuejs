@@ -51,7 +51,7 @@
   <script src="https://unpkg.com/vue@next"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script>
-    const socket = io('http://localhost:3000');
+    const socket = io(window.location.origin);
     const App = {
       data () {
         return {
