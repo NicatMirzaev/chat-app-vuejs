@@ -82,7 +82,6 @@
           const typing = [];
           for(let i = 0; i < this.users.length; i++) {
             const data = this.users[i][Object.keys(this.users[i])[0]];
-            console.log(data.typing);
             if(data.typing === true) {
               typing.push(Object.keys(this.users[i])[0]);
             }
