@@ -8,7 +8,10 @@ let users = [];
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.get('/', (req, res) => {
-  console.log(users);
+  const user = {
+    "Zoxy": {room: "Test", typing: false, id: "adasgasgasdasfasdgdfas5da6sdas4das6"}
+  }
+  users.push(user);
   res.sendFile('index.html')
 })
 
