@@ -8,6 +8,7 @@ let users = [];
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.get('/', (req, res) => {
+  console.log(users);
   res.sendFile('index.html')
 })
 
