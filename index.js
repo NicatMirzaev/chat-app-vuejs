@@ -11,10 +11,6 @@ app.get('/', (req, res) => {
   res.sendFile('index.html')
 })
 
-app.get('/users', (req, res) => {
-  res.send(users);
-})
-
 io.on('connection', socket => {
    console.log('A user connected');
    socket.on("join-room", (data) => {
